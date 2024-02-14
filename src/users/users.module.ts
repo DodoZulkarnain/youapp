@@ -3,7 +3,6 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { User, userSchema } from 'src/schema/user.schema';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
-import { AuthGuard } from 'src/auth/auth.guard';
 import { JwtModule } from '@nestjs/jwt';
 import { Profile, profileSchema } from 'src/schema/profile.schema';
 import { Interest, interestSchema } from 'src/schema/interest.schema';
@@ -31,9 +30,6 @@ import { Interest, interestSchema } from 'src/schema/interest.schema';
           }),
         ],
         controllers: [UsersController],
-        providers: [
-            UsersService, AuthGuard
-        ],
-        //exports: [UsersService],
+        providers: [UsersService],
 })
 export class UsersModule {}

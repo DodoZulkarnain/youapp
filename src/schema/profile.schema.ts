@@ -7,7 +7,7 @@ import { Interest } from "./interest.schema";
 @Schema()
 export class Profile extends Document {
     @Prop({ required: false })
-    fullName: string;
+    fullname: string;
 
     @Prop({ 
         required:false,

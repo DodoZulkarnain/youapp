@@ -1,36 +1,37 @@
-import { Body, Controller, Get, Post, Request, UsePipes, ValidationPipe, UseGuards, Req, Patch } from '@nestjs/common';
+import { Body, Controller, UseFilters } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { createUserDTO } from './dto/createUsers.dto';
-import { AuthGuard } from 'src/auth/auth.guard';
-import { updateProfileDto } from './dto/updateProfile.dto';
+import { MessagePattern, Payload } from '@nestjs/microservices';
+import { AllExceptionsFilter } from 'src/rpc-exception/all-exception.filter';
 
 @Controller('users')
-@UseGuards(AuthGuard)
+//@UseGuards(AuthGuard)
 export class UsersController {
     constructor(private UserServices: UsersService){}
 
-    @Get()
-    async getUser(@Req() request:Request){
-        console.log(request['user']._id);
-        return await this.UserServices.findUser();
-    }
-
-    @Get('/profile')
-    async find(@Req() request:Request) {
-        const id = request['user']._id
+    @MessagePattern({ cmd: 'userById' })
+    async find(@Payload() payload : any) {
+        const id = '65ccdc01e4ff177f5ec4874f';
         return await this.UserServices.findUserById(id);
     }
 
-    @Patch('/profile')
-    @UsePipes(new ValidationPipe)
-    async updateId(@Body() updateProfileDto: updateProfileDto, @Req() request:Request){
-        const id = request['user']._id;        
-        return await this.UserServices.updateProfile(id, updateProfileDto);
+    @MessagePattern({ cmd: 'userUpdate' })
+    @UseFilters(new AllExceptionsFilter())
+    async updateId(@Payload() updateProfileDto: any){
+        console.log(updateProfileDto);
+        const id = updateProfileDto.id;
+        return await this.UserServices.updateProfile(id, updateProfileDto.updateProfileDto);
     }
 
-    @Post()
-    @UsePipes(new ValidationPipe)
-    async createUser(@Body() createUserDTO: createUserDTO){
+    @MessagePattern({ cmd: 'userAll' })
+    @UseFilters(new AllExceptionsFilter())
+    async getUser(){
+        return await this.UserServices.findUser();
+    }
+
+    @MessagePattern('register')
+    @UseFilters(new AllExceptionsFilter())
+    //@UsePipes(new ValidationPipe)
+    async createUser(@Payload() createUserDTO: any){
         return await this.UserServices.createUser(createUserDTO);
     }
 

@@ -5,7 +5,6 @@ import { Model } from 'mongoose';
 import { createUserDTO } from './dto/createUsers.dto'; 
 import * as bcrypt from 'bcrypt';
 import { Profile } from 'src/schema/profile.schema';
-import { Interest } from 'src/schema/interest.schema';
 import { updateProfileDto } from './dto/updateProfile.dto';
 import {Types} from 'mongoose';
 
@@ -13,8 +12,7 @@ import {Types} from 'mongoose';
 export class UsersService {
     constructor(
         @InjectModel(User.name) private userModel: Model<User>,
-        @InjectModel(Profile.name) private profileModel: Model<Profile>,
-        @InjectModel(Interest.name) private interestModel: Model<Interest>
+        @InjectModel(Profile.name) private profileModel: Model<Profile>
         ) {}
 
     async findUser(){
@@ -37,7 +35,9 @@ export class UsersService {
 
     async updateProfile(id: string,updateProfileDto: updateProfileDto){
         try{
-            let updateProfile = await this.profileModel.findOne({user:id});
+            const idx = new Types.ObjectId(id)
+            let updateProfile = await this.profileModel.findOne({user: idx}).exec();
+            
             if(updateProfileDto.avatar){
 
             }
@@ -65,11 +65,13 @@ export class UsersService {
             const profile = await this.profileModel.findOne({user:id}).populate(['user','interest']).exec();
             return {success:true,data: profile, message: 'Success Update Profile!'};
         } catch(error){
+            console.log(error);
+            
             return {success:false,data: null, message: new InternalServerErrorException(error.message)};
         }
     }
 
-    async createUser(createUserDTO: createUserDTO){
+    async createUser(createUserDTO: createUserDTO) {
         try{
             const salt = await bcrypt.genSalt();
             createUserDTO.password = await bcrypt.hash(createUserDTO.password, salt);
@@ -83,7 +85,7 @@ export class UsersService {
             });
             return {success:true,data: NewUser, message: 'Success Submit User!'};
         } catch (error) {
-            return {success:false,data: null, message: new InternalServerErrorException(error.message)};
+            return {success:false,data: null, message: error.message};
         }
     }
 }
